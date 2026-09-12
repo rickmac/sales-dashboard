@@ -19,34 +19,20 @@ def load_data(query):
     return df
 
 
-def revenue_by_country(region):
+def revenue_by_country():
     """Chart 1: Revenue by Country"""
-    if region == 'All Regions':
-        query = """
-        SELECT 
-            dc.Country,
-            dc.Region,
-            SUM(f.`Total Revenue`) as Revenue,
-            COUNT(*) as Orders
-        FROM fact_sales f
-        JOIN dim_country dc ON f.country_id = dc.country_id
-        GROUP BY dc.Country, dc.Region
-        ORDER BY Revenue DESC
-        LIMIT 20
-        """
-    else:
-        query = f"""
-        SELECT 
-            dc.Country,
-            dc.Region,
-            SUM(f.`Total Revenue`) as Revenue,
-            COUNT(*) as Orders
-        FROM fact_sales f
-        JOIN dim_country dc ON f.country_id = dc.country_id
-        WHERE dc.Region = '{region}'
-        GROUP BY dc.Country, dc.Region
-        ORDER BY Revenue DESC
-        """
+    query = """
+    SELECT 
+        dc.Country,
+        dc.Region,
+        SUM(f.`Total Revenue`) as Revenue,
+        COUNT(*) as Orders
+    FROM fact_sales f
+    JOIN dim_country dc ON f.country_id = dc.country_id
+    GROUP BY dc.Country, dc.Region
+    ORDER BY Revenue DESC
+    LIMIT 20
+    """
     df = load_data(query)
     
     fig = px.bar(
@@ -63,28 +49,16 @@ def revenue_by_country(region):
     return fig
 
 
-def profit_trend_over_time(region):
+def profit_trend_over_time():
     """Chart 2: Monthly Profit Trend"""
-    if region == 'All Regions':
-        query = """
-        SELECT 
-            strftime('%Y-%m', `Order Date`) as Month,
-            SUM(`Total Profit`) as Monthly_Profit
-        FROM fact_sales
-        GROUP BY strftime('%Y-%m', `Order Date`)
-        ORDER BY Month
-        """
-    else:
-        query = f"""
-        SELECT 
-            strftime('%Y-%m', f.`Order Date`) as Month,
-            SUM(f.`Total Profit`) as Monthly_Profit
-        FROM fact_sales f
-        JOIN dim_country dc ON f.country_id = dc.country_id
-        WHERE dc.Region = '{region}'
-        GROUP BY strftime('%Y-%m', f.`Order Date`)
-        ORDER BY Month
-        """
+    query = """
+    SELECT 
+        strftime('%Y-%m', `Order Date`) as Month,
+        SUM(`Total Profit`) as Monthly_Profit
+    FROM fact_sales
+    GROUP BY strftime('%Y-%m', `Order Date`)
+    ORDER BY Month
+    """
     df = load_data(query)
     df['Month'] = pd.to_datetime(df['Month'])
     
@@ -102,36 +76,20 @@ def profit_trend_over_time(region):
     return fig
 
 
-def product_performance(region):
+def product_performance():
     """Chart 3: Product Performance"""
-    if region == 'All Regions':
-        query = """
-        SELECT 
-            dp.`Item Type` as Product,
-            COUNT(*) as Orders,
-            SUM(f.`Total Revenue`) as Revenue,
-            SUM(f.`Total Profit`) as Profit,
-            ROUND(AVG(f.`Total Profit`), 2) as Avg_Profit_Per_Order
-        FROM fact_sales f
-        JOIN dim_product dp ON f.product_id = dp.product_id
-        GROUP BY dp.`Item Type`
-        ORDER BY Profit DESC
-        """
-    else:
-        query = f"""
-        SELECT 
-            dp.`Item Type` as Product,
-            COUNT(*) as Orders,
-            SUM(f.`Total Revenue`) as Revenue,
-            SUM(f.`Total Profit`) as Profit,
-            ROUND(AVG(f.`Total Profit`), 2) as Avg_Profit_Per_Order
-        FROM fact_sales f
-        JOIN dim_product dp ON f.product_id = dp.product_id
-        JOIN dim_country dc ON f.country_id = dc.country_id
-        WHERE dc.Region = '{region}'
-        GROUP BY dp.`Item Type`
-        ORDER BY Profit DESC
-        """
+    query = """
+    SELECT 
+        dp.`Item Type` as Product,
+        COUNT(*) as Orders,
+        SUM(f.`Total Revenue`) as Revenue,
+        SUM(f.`Total Profit`) as Profit,
+        ROUND(AVG(f.`Total Profit`), 2) as Avg_Profit_Per_Order
+    FROM fact_sales f
+    JOIN dim_product dp ON f.product_id = dp.product_id
+    GROUP BY dp.`Item Type`
+    ORDER BY Profit DESC
+    """
     df = load_data(query)
     
     fig = px.bar(
@@ -149,36 +107,20 @@ def product_performance(region):
     return fig
 
 
-def channel_comparison(region):
+def channel_comparison():
     """Chart 4: Sales Channel Comparison"""
-    if region == 'All Regions':
-        query = """
-        SELECT 
-            dc.`Sales Channel` as Channel,
-            COUNT(*) as Orders,
-            SUM(f.`Total Revenue`) as Revenue,
-            SUM(f.`Total Profit`) as Profit,
-            SUM(f.`Units Sold`) as Units,
-            ROUND(AVG(f.`Total Profit`), 2) as Avg_Profit
-        FROM fact_sales f
-        JOIN dim_channel dc ON f.channel_id = dc.channel_id
-        GROUP BY dc.`Sales Channel`
-        """
-    else:
-        query = f"""
-        SELECT 
-            dc.`Sales Channel` as Channel,
-            COUNT(*) as Orders,
-            SUM(f.`Total Revenue`) as Revenue,
-            SUM(f.`Total Profit`) as Profit,
-            SUM(f.`Units Sold`) as Units,
-            ROUND(AVG(f.`Total Profit`), 2) as Avg_Profit
-        FROM fact_sales f
-        JOIN dim_channel dc ON f.channel_id = dc.channel_id
-        JOIN dim_country dco ON f.country_id = dco.country_id
-        WHERE dco.Region = '{region}'
-        GROUP BY dc.`Sales Channel`
-        """
+    query = """
+    SELECT 
+        dc.`Sales Channel` as Channel,
+        COUNT(*) as Orders,
+        SUM(f.`Total Revenue`) as Revenue,
+        SUM(f.`Total Profit`) as Profit,
+        SUM(f.`Units Sold`) as Units,
+        ROUND(AVG(f.`Total Profit`), 2) as Avg_Profit
+    FROM fact_sales f
+    JOIN dim_channel dc ON f.channel_id = dc.channel_id
+    GROUP BY dc.`Sales Channel`
+    """
     df = load_data(query)
     
     fig = go.Figure(data=[
@@ -205,39 +147,15 @@ def main():
     st.title('Sales Data Analytics Dashboard')
     st.markdown('---')
     
-    # Get available regions for filter
-    regions_query = "SELECT DISTINCT Region FROM dim_country ORDER BY Region"
-    regions_df = load_data(regions_query)
-    all_regions = regions_df['Region'].tolist()
-    
-    # Add "All Regions" option
-    region_options = ['All Regions'] + all_regions
-    selected_region = st.selectbox('Filter by Region:', region_options)
-    
-    st.markdown('---')
-    
     # Summary metrics
-    if selected_region == 'All Regions':
-        summary_query = """
-            SELECT 
-                COUNT(*) as Total_Orders,
-                SUM(`Total Revenue`) as Total_Revenue,
-                SUM(`Total Profit`) as Total_Profit,
-                AVG(`Total Profit`) as Avg_Profit
-            FROM fact_sales
-        """
-    else:
-        summary_query = f"""
-            SELECT 
-                COUNT(*) as Total_Orders,
-                SUM(f.`Total Revenue`) as Total_Revenue,
-                SUM(f.`Total Profit`) as Total_Profit,
-                AVG(f.`Total Profit`) as Avg_Profit
-            FROM fact_sales f
-            JOIN dim_country dc ON f.country_id = dc.country_id
-            WHERE dc.Region = '{selected_region}'
-        """
-    
+    summary_query = """
+        SELECT 
+            COUNT(*) as Total_Orders,
+            SUM(`Total Revenue`) as Total_Revenue,
+            SUM(`Total Profit`) as Total_Profit,
+            AVG(`Total Profit`) as Avg_Profit
+        FROM fact_sales
+    """
     summary = load_data(summary_query)
     
     col1, col2, col3, col4 = st.columns(4)
@@ -258,19 +176,19 @@ def main():
     
     # Chart 1
     st.subheader('1. Top Countries by Revenue')
-    st.plotly_chart(revenue_by_country(selected_region), use_container_width=True)
+    st.plotly_chart(revenue_by_country(), use_container_width=True)
     
     # Chart 2
     st.subheader('2. Profit Trend Over Time')
-    st.plotly_chart(profit_trend_over_time(selected_region), use_container_width=True)
+    st.plotly_chart(profit_trend_over_time(), use_container_width=True)
     
     # Chart 3
     st.subheader('3. Product Performance')
-    st.plotly_chart(product_performance(selected_region), use_container_width=True)
+    st.plotly_chart(product_performance(), use_container_width=True)
     
     # Chart 4
     st.subheader('4. Sales Channel Comparison')
-    st.plotly_chart(channel_comparison(selected_region), use_container_width=True)
+    st.plotly_chart(channel_comparison(), use_container_width=True)
 
 
 if __name__ == '__main__':
