@@ -138,3 +138,4 @@ python load_to_sqlite.py
 ---
 
 *Data portfolio project demonstrating modern data engineering and analytics skills for the Harris County Public Defender's Office Data Specialist position.*
+# Force redeploy
