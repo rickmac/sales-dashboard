@@ -8,7 +8,12 @@ I built a the whole pipeline from raw data to a live Streamlit dashboard.
 
 ## Background
 
-This project was inspired by concepts I explored in my Medium articles on data architecture and analytics. I wanted to take what I learned and build a complete, working example from raw data to a live dashboard.
+I wrote two articles for Medium in early 2022 on loading files that are too larger for Excel into SQLite and a folow-up on splitting up large files with pandas. This project is an extension of what I explored in my Medium articles on using pandas and SQL for splitting and reading files larger than Excel's capacity. I wanted to take what I learned and build a complete, working example from raw data to a live dashboard using the same public dataset. I reduced the original dataset down to 50,000 to be more manageable for Streamlit. 
+
+https://medium.com/@ricky-mcbride/python-using-sqlite-when-excels-limits-are-surpassed-73f98a6cf5bf?sk=c901ac877433eb5d2394726c4d47fca3
+
+https://medium.com/@ricky-mcbride/python-splitting-up-a-large-csv-file-by-record-count-or-column-value-ab4c4daf1278?sk=18996d50723f374d77b495ee2bd9b7a4
+
 
 ## Project Overview
 
@@ -116,5 +121,4 @@ python load_to_sqlite.py
 ## Contact & Portfolio
 
 - GitHub: https://github.com/rickmac/sales-dashboard
-- Medium Articles: https://medium.com/@ricky-mcbride
 - Dashboard: https://sales-dashboard-6v6zofutvawhbm99jfon82.streamlit.app/
