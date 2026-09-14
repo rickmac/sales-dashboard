@@ -1,48 +1,40 @@
 # Sales Analytics Dashboard
 
-A professional data analytics portfolio project demonstrating end-to-end data pipeline development, dimensional data modeling, and interactive visualization.
+I built a the whole pipeline from raw data to a live Streamlit dashboard.
 
 ## Live Dashboard
 
-**[View the Dashboard](https://sales-dashboard-6v6zofutvawhbm99jfon82.streamlit.app/)**
+[View the Dashboard](https://sales-dashboard-6v6zofutvawhbm99jfon82.streamlit.app/)
+
+## Background
+
+This project was inspired by concepts I explored in my Medium articles on data architecture and analytics. I wanted to take what I learned and build a complete, working example from raw data to a live dashboard.
 
 ## Project Overview
 
-This project showcases a complete data workflow:
-- **Data Cleaning**: Validated 50,000 sales records, checking for duplicates, data integrity, and calculation accuracy
-- **Data Normalization**: Designed and implemented a star schema with separate dimension and fact tables
-- **Data Visualization**: Built an interactive dashboard with 4 key business insights
-- **Deployment**: Deployed to Streamlit Cloud for live access
+Here's what I built:
+- Data Cleaning: Validated 50,000 sales records for duplicates, data integrity, and calculation accuracy
+- Data Normalization: Designed a star schema with dimension and fact tables
+- Data Visualization: Built an interactive dashboard with 4 charts
+- Deployment: Got it live on Streamlit Cloud
 
 ## Data Architecture
 
 ### Star Schema Design
 
-```
-         dim_country
-              |
-         dim_product
-              |
-    fact_sales (center)
-              |
-         dim_channel
-```
+A star schema with one central fact table connected to three dimension tables:
 
-**Dimension Tables:**
+Dimension Tables:
 - `dim_country.csv` - 185 unique country/region combinations
 - `dim_product.csv` - 12 product types
 - `dim_channel.csv` - 2 sales channels (Online/Offline)
 
-**Fact Table:**
+Fact Table:
 - `fact_sales.csv` - 50,000 sales transactions with foreign keys to dimensions
 
-## Data Quality
+## Data Validation
 
-All cleaned data passed validation checks:
-- ✓ 0 duplicate Order IDs
-- ✓ 0 profit calculation errors
-- ✓ 0 invalid shipping dates (Ship Date >= Order Date)
-- ✓ All 14 columns with correct data types
+Ran validation checks on all 50,000 records. Found zero duplicates, zero profit errors, zero date issues, and all columns had the right data types.
 
 ## Dashboard Features
 
@@ -60,12 +52,12 @@ Revenue vs. Profit comparison between Online and Offline channels, with detailed
 
 ## Tech Stack
 
-- **Python**: Data processing and scripting
-- **pandas**: Data manipulation and validation
-- **SQLite**: Database for dimensional model
-- **Streamlit**: Interactive web dashboard
-- **Plotly**: Interactive visualizations
-- **Git & GitHub**: Version control
+- Python for data processing and scripting
+- pandas for data manipulation and validation
+- SQLite for the dimensional model and live queries
+- Streamlit for the interactive web dashboard
+- Plotly for interactive visualizations
+- Git and GitHub for version control
 
 ## Project Files
 
@@ -110,32 +102,19 @@ python Cleanup_data.py
 # 2. Normalize into dimensional tables
 python normalize_data.py
 
-# 3. Load into SQLite (optional - currently using CSVs for Streamlit Cloud)
+# 3. Load into SQLite
 python load_to_sqlite.py
 ```
 
 ## Key Insights
 
-- **Geographic Diversity**: Sales span 185 countries across 6 regions
-- **Product Mix**: 12 product types with varying profitability
-- **Channel Strategy**: Both Online and Offline channels contribute significantly
-- **Seasonal Patterns**: Monthly profit trends show consistent performance
-
-## Future Enhancements
-
-- Migrate to SQLite backend for improved query performance
-- Add interactive filters for country, product, and time period selection
-- Implement forecasting models for profit prediction
-- Add drill-down capabilities for detailed transaction analysis
-- Deploy additional dimension tables for customer and supplier data
+- Geographic Diversity: Sales span 185 countries across 6 regions
+- Product Mix: 12 product types with varying profitability
+- Channel Strategy: Both Online and Offline channels contribute strongly
+- Seasonal Patterns: Monthly profit trends show consistent performance
 
 ## Contact & Portfolio
 
-- **GitHub**: https://github.com/rickmac/sales-dashboard
-- **Medium Articles**: https://medium.com/@ricky-mcbride
-- **Dashboard**: https://sales-dashboard-6v6zofutvawhbm99jfon82.streamlit.app/
-
----
-
-*Data portfolio project demonstrating modern data engineering and analytics skills for the Harris County Public Defender's Office Data Specialist position.*
-# Force redeploy
+- GitHub: https://github.com/rickmac/sales-dashboard
+- Medium Articles: https://medium.com/@ricky-mcbride
+- Dashboard: https://sales-dashboard-6v6zofutvawhbm99jfon82.streamlit.app/
