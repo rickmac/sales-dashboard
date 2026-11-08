@@ -32,3 +32,11 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.log
+# Local-only files (not for GitHub)
+2m Sales Records.csv
+DASHBOARD_CODE_BREAKDOWN.md
+Data_info.py
+FiftyThousand_recs.csv
+Get 50000_recs.py
+data infro display
+dim_priority.csv
