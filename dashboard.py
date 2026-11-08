@@ -12,28 +12,32 @@ def get_connection():
 
 
 @st.cache_data
-def load_data(query):
+def load_data(query, params=None):
     """Execute SQL query and return pandas DataFrame"""
     conn = get_connection()
-    df = pd.read_sql(query, conn)
-    return df
+    if params:
+        return pd.read_sql(query, conn, params=params)
+    return pd.read_sql(query, conn)
 
 
-def revenue_by_country():
+
+def revenue_by_country(start_date, end_date):
     """Chart 1: Revenue by Country"""
     query = """
-    SELECT 
+    SELECT
         dc.Country,
         dc.Region,
         SUM(f.`Total Revenue`) as Revenue,
         COUNT(*) as Orders
     FROM fact_sales f
     JOIN dim_country dc ON f.country_id = dc.country_id
+    WHERE strftime('%Y-%m-%d', f.`Order Date`) BETWEEN ? AND ?
     GROUP BY dc.Country, dc.Region
     ORDER BY Revenue DESC
     LIMIT 20
     """
-    df = load_data(query)
+    df = load_data(query, params=(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')))
+
     
     fig = px.bar(
         df, 
@@ -49,19 +53,20 @@ def revenue_by_country():
     return fig
 
 
-def profit_trend_over_time():
+def profit_trend_over_time(start_date, end_date):
     """Chart 2: Monthly Profit Trend"""
     query = """
-    SELECT 
+    SELECT
         strftime('%Y-%m', `Order Date`) as Month,
         SUM(`Total Profit`) as Monthly_Profit
     FROM fact_sales
+    WHERE strftime('%Y-%m-%d', `Order Date`) BETWEEN ? AND ?
     GROUP BY strftime('%Y-%m', `Order Date`)
     ORDER BY Month
     """
-    df = load_data(query)
+    df = load_data(query, params=(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')))
     df['Month'] = pd.to_datetime(df['Month'])
-    
+
     fig = px.line(
         df,
         x='Month',
@@ -76,10 +81,11 @@ def profit_trend_over_time():
     return fig
 
 
-def product_performance():
+
+def product_performance(start_date, end_date):
     """Chart 3: Product Performance"""
     query = """
-    SELECT 
+    SELECT
         dp.`Item Type` as Product,
         COUNT(*) as Orders,
         SUM(f.`Total Revenue`) as Revenue,
@@ -87,11 +93,12 @@ def product_performance():
         ROUND(AVG(f.`Total Profit`), 2) as Avg_Profit_Per_Order
     FROM fact_sales f
     JOIN dim_product dp ON f.product_id = dp.product_id
+    WHERE strftime('%Y-%m-%d', f.`Order Date`) BETWEEN ? AND ?
     GROUP BY dp.`Item Type`
     ORDER BY Profit DESC
     """
-    df = load_data(query)
-    
+    df = load_data(query, params=(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')))
+
     fig = px.bar(
         df,
         x='Product',
@@ -107,10 +114,10 @@ def product_performance():
     return fig
 
 
-def channel_comparison():
+def channel_comparison(start_date, end_date):
     """Chart 4: Sales Channel Comparison"""
     query = """
-    SELECT 
+    SELECT
         dc.`Sales Channel` as Channel,
         COUNT(*) as Orders,
         SUM(f.`Total Revenue`) as Revenue,
@@ -119,17 +126,18 @@ def channel_comparison():
         ROUND(AVG(f.`Total Profit`), 2) as Avg_Profit
     FROM fact_sales f
     JOIN dim_channel dc ON f.channel_id = dc.channel_id
+    WHERE strftime('%Y-%m-%d', f.`Order Date`) BETWEEN ? AND ?
     GROUP BY dc.`Sales Channel`
     """
-    df = load_data(query)
-    
+    df = load_data(query, params=(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')))
+
     fig = go.Figure(data=[
-        go.Bar(name='Revenue', x=df['Channel'], y=df['Revenue'], 
+        go.Bar(name='Revenue', x=df['Channel'], y=df['Revenue'],
                hovertemplate='<b>%{x}</b><br>Revenue: $%{y:,.0f}<extra></extra>'),
         go.Bar(name='Profit', x=df['Channel'], y=df['Profit'],
                hovertemplate='<b>%{x}</b><br>Profit: $%{y:,.0f}<extra></extra>')
     ])
-    
+
     fig.update_layout(
         title='Sales Channel: Revenue vs Profit',
         barmode='group',
@@ -143,20 +151,39 @@ def channel_comparison():
 def main():
     """Main Streamlit app"""
     st.set_page_config(page_title='Sales Dashboard', layout='wide')
+
     
+
     st.title('Sales Data Analytics Dashboard')
     st.markdown('---')
+
+    #I added the sidebar code.
+    st.sidebar.header("Filters")
     
-    # Summary metrics
+    date_range = st.sidebar.date_input(
+        "Select Date Range",
+        value=(pd.to_datetime("2010-01-01"), pd.to_datetime("2020-09-10")),
+        key="date_range"
+    )
+    if len(date_range) == 2:
+        start_date, end_date = date_range
+    else:
+        st.stop()  # wait until the user picks an end date
+
+
     summary_query = """
-        SELECT 
+        SELECT
             COUNT(*) as Total_Orders,
             SUM(`Total Revenue`) as Total_Revenue,
             SUM(`Total Profit`) as Total_Profit,
             AVG(`Total Profit`) as Avg_Profit
         FROM fact_sales
+        WHERE strftime('%Y-%m-%d', `Order Date`) BETWEEN ? AND ?
     """
-    summary = load_data(summary_query)
+    summary = load_data(
+        summary_query,
+        params=(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+    )
     
     col1, col2, col3, col4 = st.columns(4)
     
@@ -176,19 +203,21 @@ def main():
     
     # Chart 1
     st.subheader('1. Top Countries by Revenue')
-    st.plotly_chart(revenue_by_country(), use_container_width=True)
+    st.plotly_chart(revenue_by_country(start_date, end_date), use_container_width=True)
+
     
     # Chart 2
     st.subheader('2. Profit Trend Over Time')
-    st.plotly_chart(profit_trend_over_time(), use_container_width=True)
-    
+    st.plotly_chart(profit_trend_over_time(start_date, end_date), use_container_width=True)
+
     # Chart 3
     st.subheader('3. Product Performance')
-    st.plotly_chart(product_performance(), use_container_width=True)
+    st.plotly_chart(product_performance(start_date, end_date), use_container_width=True)
     
     # Chart 4
     st.subheader('4. Sales Channel Comparison')
-    st.plotly_chart(channel_comparison(), use_container_width=True)
+    st.plotly_chart(channel_comparison(start_date, end_date), use_container_width=True)
+
 
 
 if __name__ == '__main__':

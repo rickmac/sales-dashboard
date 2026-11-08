@@ -44,6 +44,9 @@ Ran validation checks on all 50,000 records. Found zero duplicates, zero profit 
 
 ## Dashboard Features
 
+### Date Range Filter
+A date picker in the sidebar sets the start and end date. The summary cards and all four charts update to show only orders in that range. The default range is 2010-01-01 to 2020-09-10, which covers the full dataset.
+
 ### 1. Revenue by Country
 Top 20 countries ranked by total revenue, color-coded by region. Identifies geographic performance leaders.
 
