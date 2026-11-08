@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 @st.cache_resource
 def get_connection():
     """Connect to SQLite database"""
-    return sqlite3.connect('sales_data.db')
+    return sqlite3.connect('sales_data.db', check_same_thread=False)
 
 
 @st.cache_data
