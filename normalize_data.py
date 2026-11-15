@@ -74,6 +74,37 @@ def create_fact_table(sales_data, dim_country, dim_product, dim_channel):
     return fact_sales
 
 
+def validate_fact(fact_sales, sales_data, dim_country, dim_product, dim_channel):
+    """Stop the run if the fact table is incomplete or its keys are broken"""
+    problems = []
+
+    if len(fact_sales) != len(sales_data):
+        problems.append(f"fact table has {len(fact_sales)} rows, cleaned data has {len(sales_data)}")
+
+    for key in ['country_id', 'product_id', 'channel_id']:
+        missing = fact_sales[key].isna().sum()
+        if missing > 0:
+            problems.append(f"{missing} fact rows have no match for {key}")
+
+    for name, dim, key in [
+        ('dim_country', dim_country, 'country_id'),
+        ('dim_product', dim_product, 'product_id'),
+        ('dim_channel', dim_channel, 'channel_id'),
+    ]:
+        if not dim[key].is_unique:
+            problems.append(f"{name} has duplicate {key} values")
+
+    fact_revenue = fact_sales['Total Revenue'].sum()
+    source_revenue = sales_data['Total Revenue'].sum()
+    tolerance = max(0.01, 1e-9 * abs(source_revenue))
+    if abs(fact_revenue - source_revenue) > tolerance:
+        problems.append(f"Total Revenue differs: fact {fact_revenue:,.2f} vs cleaned {source_revenue:,.2f}")
+
+    if problems:
+        raise ValueError("Fact table validation failed: " + "; ".join(problems))
+    print("Fact table validation passed.")
+
+
 def save_dims(dim_country, dim_product, dim_channel):
     """Save all dim tables to CSV"""
     dim_country.to_csv('dim_country.csv', index=False)
@@ -110,6 +141,9 @@ if __name__ == "__main__":
     # Create fact table
     fact_sales = create_fact_table(sales_data, dim_country, dim_product, dim_channel)
     
+    # Check before anything is written to disk
+    validate_fact(fact_sales, sales_data, dim_country, dim_product, dim_channel)
+
     # Save all tables
     save_dims(dim_country, dim_product, dim_channel)
     save_fact_table(fact_sales)

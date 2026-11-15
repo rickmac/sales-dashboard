@@ -1,6 +1,6 @@
 # Sales Analytics Dashboard
 
-I built a the whole pipeline from raw data to a live Streamlit dashboard.
+I built the whole pipeline from raw data to a live Streamlit dashboard.
 
 ## Live Dashboard
 
@@ -40,7 +40,24 @@ Fact Table:
 
 ## Data Validation
 
-Ran validation checks on all 50,000 records. Found zero duplicates, zero profit errors, zero date issues, and all columns had the right data types.
+Each pipeline step checks its output and stops with an error if a check fails, so bad data never reaches the database.
+
+**Cleaning (`Cleanup_data.py`)**
+- No duplicate Order IDs
+- Total Profit equals Total Revenue minus Total Cost, within $0.01
+- Ship Date is on or after Order Date
+
+**Normalization (`normalize_data.py`)**
+- The fact table has the same number of rows as the cleaned data
+- Every fact row matches a row in each dimension table
+- Dimension keys are unique
+- Total revenue in the fact table matches the cleaned data
+
+**Loading (`load_to_sqlite.py`)**
+- Each table's row count matches its CSV file
+- Every fact row matches a row in each dimension table
+
+All 50,000 source records pass these checks.
 
 ## Dashboard Features
 
@@ -104,16 +121,17 @@ The dashboard will open at `http://localhost:8501`
 
 ### Data Pipeline
 
-```bash
-# 1. Clean and validate data
-python Cleanup_data.py
+The 50,000-record source file (`FiftyThousand_recs.csv`) is not in this repository. The repository includes `cleaned_sales_data.csv`, which already passed the cleaning checks, so the pipeline can start from there:
 
-# 2. Normalize into dimensional tables
+```bash
+# 1. Normalize into dimensional tables (reads cleaned_sales_data.csv)
 python normalize_data.py
 
-# 3. Load into SQLite
+# 2. Load into SQLite (creates sales_data.db)
 python load_to_sqlite.py
 ```
+
+To rerun the cleaning step, place the 50,000-record source file at `FiftyThousand_recs.csv` in the project folder, then run `python Cleanup_data.py` before the steps above. That file is not in the repository.
 
 ## Key Insights
 

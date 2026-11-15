@@ -16,6 +16,7 @@ def check_duplicates(sales_data):
     print(f"Total duplicate Order IDs found: {len(duplicates)}")
     if len(duplicates) > 0:
         print(duplicates)
+        raise ValueError(f"{len(duplicates)} rows share an Order ID")
     return sales_data
 
 def validate_profit(sales_data):
@@ -26,6 +27,7 @@ def validate_profit(sales_data):
     print(f"Profit calculation errors found: {len(profit_mismatch)}")
     if len(profit_mismatch) > 0:
         print(profit_mismatch)
+        raise ValueError(f"{len(profit_mismatch)} rows have Total Profit that does not equal Revenue minus Cost")
 
     return sales_data
 
@@ -36,6 +38,7 @@ def validate_shipping_dates(sales_data):
     print(f"Invalid shipping dates found (Ship < Order): {len(invalid_dates)}")
     if len(invalid_dates) > 0:
         print(invalid_dates[['Order Date', 'Ship Date', 'Order ID']])
+        raise ValueError(f"{len(invalid_dates)} rows ship before they were ordered")
 
     return sales_data
 

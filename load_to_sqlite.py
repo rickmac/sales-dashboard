@@ -43,9 +43,33 @@ def load_to_sqlite():
     # Verify the load
     print("Tables loaded to sales_data.db:\n")
     
+    expected_counts = {
+        'dim_country': len(dim_country),
+        'dim_product': len(dim_product),
+        'dim_channel': len(dim_channel),
+        'fact_sales': len(fact_sales),
+    }
+    problems = []
     for table_name in ['dim_country', 'dim_product', 'dim_channel', 'fact_sales']:
         count = pd.read_sql(f'SELECT COUNT(*) as count FROM {table_name}', conn)
-        print(f"  {table_name}: {count['count'][0]:,} rows")
+        actual = int(count['count'][0])
+        print(f"  {table_name}: {actual:,} rows")
+        if actual != expected_counts[table_name]:
+            problems.append(f"{table_name} has {actual} rows, CSV has {expected_counts[table_name]}")
+
+    # Every fact row must point to a row in each dimension
+    for key, dim_table in [('country_id', 'dim_country'), ('product_id', 'dim_product'), ('channel_id', 'dim_channel')]:
+        orphans = pd.read_sql(
+            f'SELECT COUNT(*) as count FROM fact_sales WHERE {key} NOT IN (SELECT {key} FROM {dim_table})',
+            conn,
+        )
+        orphan_count = int(orphans['count'][0])
+        if orphan_count > 0:
+            problems.append(f"{orphan_count} fact rows have a {key} with no row in {dim_table}")
+
+    if problems:
+        conn.close()
+        raise ValueError("Database load failed checks: " + "; ".join(problems))
     
     # Show schema
     print("\nDatabase schema:")
